@@ -8,7 +8,7 @@ HTML은 브라우저가 문서 객체 모델(DOM)을 구성하기 위해 따라�
 
 **※DOM(Documnet Object Model)?**
 
-: JavaScript Node 개체의 계층화된 트리로, HTML, XML 문서의 프로그래밍 API이다. 문서의 구조화된 표현을 제공하며 프로그래밍 언어가 DOM 구조에 접근할 수 있는 방법을 제공한다.
+JavaScript Node 개체의 계층화된 트리로, HTML, XML 문서의 프로그래밍 API이다. 문서의 구조화된 표현을 제공하며 프로그래밍 언어가 DOM 구조에 접근할 수 있는 방법을 제공한다.
 
 ### React의 특징
 
@@ -143,141 +143,6 @@ ReactDOM.render(
 3. `Welcome` 컴포넌트는 결과적으로 `<h1>Hello, Sara</h1>` 엘리먼트를 반환합니다.
 4. React DOM은 `<h1>Hello, Sara</h1>` 엘리먼트와 일치하도록 DOM을 효율적으로 업데이트합니다.
 
-### Component 합성
-
-컴포넌트는 자신의 출력에 다른 컴포넌트를 참조할 수 있습니다. 이는 모든 세부 단계에서 동일한 추상 컴포넌트를 사용할 수 있음을 의미합니다. React 앱에서는 버튼, 폼, 다이얼로그, 화면 등의 모든 것들이 흔히 컴포넌트로 표현됩니다.
-
-예를 들어 Welcome을 여러 번 렌더링하는 App 컴포넌트를 만들 수 있습니다.
-
-```jsx
-function Welcome(props) {
-  return <h1>Hello, {props.name}</h1>;
-}
-
-function App() {
-  return (
-    <div>
-      <Welcome name="Sara" />
-      <Welcome name="Cahal" />
-      <Welcome name="Edite" />
-    </div>
-  );
-}
-
-ReactDOM.render(
-  <App />,
-  document.getElementById('root')
-);
-```
-
-일반적으로 새 React 앱은 최상위에 단일 App 컴포넌트를 가지고 있습니다. 하지만 기존 앱에 React를 통합하는 경우에는 Button과 같은 작은 컴포넌트부터 시작해서 뷰 계층의 상단으로 올라가면서 점진적으로 작업해야 할 수 있습니다.
-
-### Component 추출
-
-다음 Comment 컴포넌트를 살펴봅시다.
-
-```jsx
-function Comment(props) {
-  return (
-    <div className="Comment">
-      <div className="UserInfo">
-        <img className="Avatar"
-          src={props.author.avatarUrl}
-          alt={props.author.name}
-        />
-        <div className="UserInfo-name">
-          {props.author.name}
-        </div>
-      </div>
-      <div className="Comment-text">
-        {props.text}
-      </div>
-      <div className="Comment-date">
-        {formatDate(props.date)}
-      </div>
-    </div>
-  );
-}
-```
-
-이 컴포넌트는 `author`(객체), `text`(문자열) 및 `date`(날짜)를 props로 받은 후 소셜 미디어 웹 사이트의 코멘트를 나타냅니다.
-
-이 컴포넌트는 구성요소들이 모두 중첩 구조로 이루어져 있어서 변경하기 어려울 수 있으며, 각 구성요소를 개별적으로 재사용하기도 힘듭니다. 이 컴포넌트에서 몇 가지 컴포넌트를 추출하겠습니다.
-
-먼저 Avatar를 추출하겠습니다.
-
-```jsx
-function Avatar(props) {
-  return (
-    <img className="Avatar"
-      src={props.user.avatarUrl}
-      alt={props.user.name}
-    />
-  );
-}
-```
-
-`vatar` 는 자신이 `Comment` 내에서 렌더링 된다는 것을 알 필요가 없습니다. 따라서 props의 이름을 `author`에서 더욱 일반화된 `user`로 변경하였습니다.
-
-props의 이름은 사용될 context가 아닌 컴포넌트 자체의 관점에서 짓는 것을 권장합니다.
-
-이제 Comment 가 살짝 단순해졌습니다.
-
-```jsx
-function Comment(props) {
-  return (
-    <div className="Comment">
-      <div className="UserInfo">
-        <Avatar user={props.author} />
-        <div className="UserInfo-name">
-          {props.author.name}
-        </div>
-      </div>
-      <div className="Comment-text">
-        {props.text}
-      </div>
-      <div className="Comment-date">
-        {formatDate(props.date)}
-      </div>
-    </div>
-  );
-}
-```
-
-다음으로 Avatar 옆에 사용자의 이름을 렌더링하는 UserInfo 컴포넌트를 추출하겠습니다.
-
-```jsx
-function UserInfo(props) {
-  return (
-    <div className="UserInfo">
-      <Avatar user={props.user} />
-      <div className="UserInfo-name">
-        {props.user.name}
-      </div>
-    </div>
-  );
-}
-```
-
-처음과 비교할때 Comment가 단순해졌습니다.
-
-```jsx
-function Comment(props) {
-  return (
-    <div className="Comment">
-      <UserInfo user={props.author} />
-      <div className="Comment-text">
-        {props.text}
-      </div>
-      <div className="Comment-date">
-        {formatDate(props.date)}
-      </div>
-    </div>
-  );
-```
-
-처음에는 컴포넌트를 추출하는 작업이 지루해 보일 수 있습니다. 하지만 재사용 가능한 컴포넌트를 만들어 놓는 것은 더 큰 앱에서 작업할 때 두각을 나타냅니다. UI 일부가 여러 번 사용되거나 (Button, Panel, Avatar), UI 일부가 자체적으로 복잡한 (App, FeedStory, Comment) 경우에는 별도의 컴포넌트로 만드는 게 좋습니다.
-
 ## Props는 읽기 전용입니다.
 
 함수 컴포넌트나 클래스 컴포넌트 모두 컴포넌트의 자체 props를 수정해서는 안 됩니다. 다음 sum 함수를 살펴봅시다.
@@ -370,6 +235,8 @@ State는 props와 유사하지만, 비공개이며 컴포넌트에 의해 완전
 
 ### **클래스에 로컬 State 추가하기**
 
+예제1)
+
 1. render() 메서드 안에 있는 this.props.date를 this.state.date로 변경합니다.
 
 ```jsx
@@ -449,3 +316,206 @@ ReactDOM.render(
   document.getElementById('root')
 );
 ```
+
+예제2)
+
+state는 내부에서 변경할 수 있다.
+
+변경할 때는 언제나 setState()라는 함수를 사용한다.
+
+```jsx
+// Counter.js
+import React, { Component } from 'react';
+
+class Counter extends Component {
+
+  state = {
+    number: 0
+  }
+
+// custom 함수는 람다 함수로 작성해야 한다. 안그러면 함수 내부에서 this를 찾을 수 없다.
+// 아니면 아래와 같은 생성자 작업으로 함수 내부에서 this를 사용할 수 있도록 해줘야 한다.
+/*
+  constructor(props) {
+    super(props);
+    this.handleIncrease = this.handleIncrease.bind(this);
+    this.handleDecrease = this.handleDecrease.bind(this);
+  }
+*/
+
+  handleIncrease = () => {
+    this.setState({
+      number: this.state.number + 1
+    })
+  }
+
+  handleDecrease = () => {
+    this.setState({
+      number: this.state.number - 1
+    })    
+  }
+
+  render() {
+    return {
+      <div>
+        <h1>카운터</h1>
+        <div>값: {this.state.number}</div>
+        <button onClick={this.handleIncrease}>+</button>
+        <button onClick={this.handleDecrease}>-</button>
+      </div>
+    }
+  }
+}
+
+export default Counter;
+```
+
+```jsx
+// App.js
+import React, { Component } from 'react';
+import MyName from './MyName';
+
+class App extends Component {
+  render() {
+    return <Counter />;
+  }
+}
+
+export default App;
+```
+
+## 생명주기 메서드를 클래스에 추가하기
+
+많은 컴포넌트가 있는 애플리케이션에서 컴포넌트가 삭제될 때 해당 컴포넌트가 사용 중이던 리소스를 확보하는 것이 중요합니다. Clock이 처음 DOM에 렌더링 될 때마다 타이머를 설정하려고 합니다. 이것은 React에서 “마운팅”이라고 합니다. 또한 Clock에 의해 생성된 DOM이 삭제될 때마다 타이머를 해제하려고 합니다.
+
+컴포넌트 클래스에서 특별한 메서드를 선언하여 컴포넌트가 마운트되거나 언마운트 될 때 일부 코드를 작동할 수 있습니다.
+
+```jsx
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {date: new Date()};
+  }
+
+//컴포넌트 마운트
+  componentDidMount() {
+  }
+
+//컴포넌트 언마운트
+  componentWillUnmount() {
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+      </div>
+    );
+  }
+}
+```
+
+이러한 메서드들은 “생명주기 메서드”라고 불립니다.
+
+componentDidMount() 메서드는 컴포넌트 출력물이 DOM에 렌더링 된 후에 실행됩니다. 이 장소가 타이머를 설정하기에 좋은 장소입니다.
+
+```jsx
+componentDidMount() {
+    this.timerID = setInterval(
+      () => this.tick(),
+      1000
+    );
+  }
+```
+
+`this` (`this.timerID`)에서 어떻게 타이머 ID를 제대로 저장하는지 주의해주세요.
+
+`this.props`가 React에 의해 스스로 설정되고 `this.state`가 특수한 의미가 있지만, 타이머 ID와 같이 데이터 흐름 안에 포함되지 않는 어떤 항목을 보관할 필요가 있다면 자유롭게 클래스에 수동으로 부가적인 필드를 추가해도 됩니다.
+
+`componentWillUnmount()` 생명주기 메서드 안에 있는 타이머를 분해해 보겠습니다.
+
+```jsx
+componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+```
+
+마지막으로 `Clock` 컴포넌트가 매초 작동하도록 하는 `tick()`이라는 메서드를 구현해 보겠습니다.
+
+이것은 컴포넌트 로컬 state를 업데이트하기 위해 `this.setState()`를 사용합니다.
+
+```jsx
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {date: new Date()};
+  }
+
+  componentDidMount() {
+    this.timerID = setInterval(
+      () => this.tick(),
+      1000
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  tick() {
+    this.setState({
+      date: new Date()
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(
+  <Clock />,
+  document.getElementById('root')
+);
+```
+
+이제 시계는 매초 째깍거립니다.
+
+현재 어떤 상황이고 메서드가 어떻게 호출되는지 순서대로 빠르게 요약해 보겠습니다.
+
+1. `<Clock />`가 `ReactDOM.render()`로 전달되었을 때 React는 `Clock` 컴포넌트의 constructor를 호출합니다. `Clock`이 현재 시각을 표시해야 하기 때문에 현재 시각이 포함된 객체로 `this.state`를 초기화합니다. 나중에 이 state를 업데이트할 것입니다.
+2. React는 `Clock` 컴포넌트의 `render()` 메서드를 호출합니다. 이를 통해 React는 화면에 표시되어야 할 내용을 알게 됩니다. 그 다음 React는 `Clock`의 렌더링 출력값을 일치시키기 위해 DOM을 업데이트합니다.
+3. `Clock` 출력값이 DOM에 삽입되면, React는 `componentDidMount()` 생명주기 메서드를 호출합니다. 그 안에서 `Clock` 컴포넌트는 매초 컴포넌트의 `tick()` 메서드를 호출하기 위한 타이머를 설정하도록 브라우저에 요청합니다.
+4. 매초 브라우저가 `tick()` 메서드를 호출합니다. 그 안에서 `Clock` 컴포넌트는 `setState()`에 현재 시각을 포함하는 객체를 호출하면서 UI 업데이트를 진행합니다. `setState()` 호출 덕분에 React는 state가 변경된 것을 인지하고 화면에 표시될 내용을 알아내기 위해 `render()` 메서드를 다시 호출합니다. 이 때 `render()` 메서드 안의 `this.state.date`가 달라지고 렌더링 출력값은 업데이트된 시각을 포함합니다. React는 이에 따라 DOM을 업데이트합니다.
+5. `Clock` 컴포넌트가 DOM으로부터 한 번이라도 삭제된 적이 있다면 React는 타이머를 멈추기 위해 `componentWillUnmount()` 생명주기 메서드를 호출합니다.
+
+lifecycle api
+
+![Untitled](https://user-images.githubusercontent.com/45458274/126184626-952c2fa9-f0e6-4c02-b8ab-71560a47d984.png)
+
+- constructor
+    - 컴포넌트가 처음 브라우저에 나타날 때
+    - State 초기 설정, 미리 해야하는 작업들
+- getDerivedStateFromProps
+    - props로 받은 값을 state에 그대로 동기화를 시키고 싶은 경우
+    - Mounting 단계, Updating 단계 모두 실행된다.
+- render
+    - 어떤 DOM을 만들고 어떤 값을 정의할지 정의한다.
+- componentDidMount
+    - 외부 라이브러리를 사용할 때 특정 DOM에 어떤 처리를 한다던지, ajax 요청 등을 할 때 사용한다.
+    - 컴포넌트가 나타난 다음에 어떤 작업을 할지를 명시한다. 이벤트 리스닝, API 요청 등
+- **shouldComponentUpdate**
+    - 컴포넌트가 업데이트되는 성능을 최적화시키고 싶을 때 사용한다.
+    - 바뀌지 않은 컴포넌트에 대해서는 render 함수를 타지 않도록 한다. (true, false 반환)
+- getSnapshotBeforeUpdate
+    - 렌더링이 끝난 후 브라우저에 반영되기 직전에 호출되는 함수
+- componentDidUpdate
+    - 컴포넌트 업데이트 후 호출되는 함수
+- componentWillUnmount
+    - componentDidMount에서 설정한 리스너를 해제하는 역할
